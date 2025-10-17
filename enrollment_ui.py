@@ -49,7 +49,7 @@ class FaceGuardCenter(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Центр Управления FaceGuard")
-        self.geometry("1100x800")
+        self.geometry("1100x800") # Возвращаем исходную высоту
         self.resizable(False, False)
         ctk.set_appearance_mode("dark") # Устанавливаем темную тему по умолчанию
 
@@ -191,45 +191,51 @@ class FaceGuardCenter(ctk.CTk):
         self.snapshot_button.configure(command=self.take_snapshot, text="Сделать снимок") # Восстанавливаем команду кнопки
 
     def create_settings_widgets(self, parent_frame):
-        """Создает виджеты для секции настроек."""
+        """Создает виджеты для секции настроек внутри прокручиваемой области."""
+        parent_frame.grid_rowconfigure(0, weight=1)
         parent_frame.grid_columnconfigure(0, weight=1)
-        
+
+        # Создаем прокручиваемый фрейм, который займет все место в parent_frame
+        scrollable_frame = ctk.CTkScrollableFrame(parent_frame, label_text="Настройки")
+        scrollable_frame.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
+        scrollable_frame.grid_columnconfigure(0, weight=1)
+
+        # --- Теперь все блоки настроек добавляем в scrollable_frame ---
+
         # --- Блок "Настройки Распознавания" ---
-        rec_frame = ctk.CTkFrame(parent_frame)
+        rec_frame = ctk.CTkFrame(scrollable_frame)
         rec_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
+        rec_frame.grid_columnconfigure(0, weight=1)
         ctk.CTkLabel(rec_frame, text="Настройки Распознавания", font=("Arial", 16, "bold")).pack(anchor="w", padx=10, pady=5)
         
-        # Слайдер для настройки порога схожести
         self.threshold_label = ctk.CTkLabel(rec_frame, text="Чувствительность (порог): 0.50")
         self.threshold_label.pack(anchor="w", padx=10, pady=(10, 0))
         self.threshold_slider = ctk.CTkSlider(rec_frame, from_=0.1, to=1.0, command=self.update_threshold)
         self.threshold_slider.pack(fill="x", padx=10, pady=5, expand=True)
         
-        # Кнопка для удаления текущей регистрации
         ctk.CTkButton(rec_frame, text="Удалить регистрацию", command=self.delete_enrollment, fg_color="#D2042D", hover_color="#AA0022").pack(pady=10, padx=10)
         
-        # --- Блок "Настройки Качества Снимка" (ТОЛЬКО ЯРКОСТЬ) ---
-        quality_frame = ctk.CTkFrame(parent_frame)
+        # --- Блок "Настройки Качества Снимка" ---
+        quality_frame = ctk.CTkFrame(scrollable_frame)
         quality_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=10)
+        quality_frame.grid_columnconfigure(0, weight=1)
         ctk.CTkLabel(quality_frame, text="Настройки Качества Снимка", font=("Arial", 16, "bold")).pack(anchor="w", padx=10, pady=5)
         
-        # Метка для отображения диапазона яркости
         self.brightness_label = ctk.CTkLabel(quality_frame, text="Допустимая яркость: 90 - 150")
         self.brightness_label.pack(anchor="w", padx=10, pady=(10, 0))
         
-        # Слайдер для установки целевой яркости
         ctk.CTkLabel(quality_frame, text="Целевая яркость (0-255):").pack(anchor="w", padx=10, pady=(5,0))
         self.brightness_target_slider = ctk.CTkSlider(quality_frame, from_=0, to=255, number_of_steps=256, command=self.update_brightness)
         self.brightness_target_slider.pack(fill="x", padx=10, pady=(0,5), expand=True)
         
-        # Слайдер для установки допуска по яркости (+/- от целевой)
         ctk.CTkLabel(quality_frame, text="Допуск (+/-):").pack(anchor="w", padx=10, pady=(5,0))
         self.brightness_tolerance_slider = ctk.CTkSlider(quality_frame, from_=0, to=100, number_of_steps=101, command=self.update_brightness)
         self.brightness_tolerance_slider.pack(fill="x", padx=10, pady=(0,5), expand=True)
 
-        # --- НОВЫЙ БЛОК: РАСШИРЕННЫЕ НАСТРОЙКИ КАЧЕСТВА ---
-        adv_quality_frame = ctk.CTkFrame(parent_frame)
+        # --- Блок "Расширенные Настройки Качества" ---
+        adv_quality_frame = ctk.CTkFrame(scrollable_frame)
         adv_quality_frame.grid(row=2, column=0, sticky="ew", padx=10, pady=10)
+        adv_quality_frame.grid_columnconfigure(0, weight=1)
         ctk.CTkLabel(adv_quality_frame, text="Расширенные Настройки Качества", font=("Arial", 16, "bold")).pack(anchor="w", padx=10, pady=5)
 
         self.det_score_label = ctk.CTkLabel(adv_quality_frame, text="Мин. уверенность детектора: 0.90")
@@ -247,9 +253,10 @@ class FaceGuardCenter(ctk.CTk):
         self.blur_slider = ctk.CTkSlider(adv_quality_frame, from_=10, to=300, command=self.update_adv_quality_labels)
         self.blur_slider.pack(fill="x", padx=10, pady=5, expand=True)
 
-        # --- НОВЫЙ БЛОК: НАСТРОЙКИ ПРОВЕРКИ НАРУШИТЕЛЯ ---
-        intruder_frame = ctk.CTkFrame(parent_frame)
+        # --- Блок "Настройки Проверки Нарушителя" ---
+        intruder_frame = ctk.CTkFrame(scrollable_frame)
         intruder_frame.grid(row=3, column=0, sticky="ew", padx=10, pady=10)
+        intruder_frame.grid_columnconfigure(0, weight=1)
         ctk.CTkLabel(intruder_frame, text="Настройки Проверки Нарушителя", font=("Arial", 16, "bold")).pack(anchor="w", padx=10, pady=5)
 
         self.retries_label = ctk.CTkLabel(intruder_frame, text="Кол-во повторных проверок: 3")
@@ -263,26 +270,24 @@ class FaceGuardCenter(ctk.CTk):
         self.delay_slider.pack(fill="x", padx=10, pady=5, expand=True)
         
         # --- Блок "Уведомления Telegram" ---
-        tg_frame = ctk.CTkFrame(parent_frame)
+        tg_frame = ctk.CTkFrame(scrollable_frame)
         tg_frame.grid(row=4, column=0, sticky="ew", padx=10, pady=10)
+        tg_frame.grid_columnconfigure(0, weight=1)
         ctk.CTkLabel(tg_frame, text="Настройки Уведомлений Telegram", font=("Arial", 16, "bold")).pack(anchor="w", padx=10, pady=5)
         
-        # Поле ввода для токена бота Telegram
         ctk.CTkLabel(tg_frame, text="Токен Telegram-бота:").pack(anchor="w", padx=10)
         self.token_entry = ctk.CTkEntry(tg_frame)
         self.token_entry.pack(fill="x", padx=10, expand=True)
-        self.token_entry.bind("<KeyRelease>", lambda e: self.save_config()) # Сохранение при каждом нажатии клавиши
+        self.token_entry.bind("<KeyRelease>", lambda e: self.save_config())
         
-        # Поле ввода для ID чата Telegram
         ctk.CTkLabel(tg_frame, text="ID чата с ботом:").pack(anchor="w", padx=10, pady=(10,0))
         self.chat_id_entry = ctk.CTkEntry(tg_frame)
         self.chat_id_entry.pack(fill="x", padx=10, expand=True)
-        self.chat_id_entry.bind("<KeyRelease>", lambda e: self.save_config()) # Сохранение при каждом нажатии клавиши
+        self.chat_id_entry.bind("<KeyRelease>", lambda e: self.save_config())
         
-        # Кнопка для проверки работы Telegram-уведомлений
         ctk.CTkButton(tg_frame, text="Проверить Telegram", command=self.test_telegram).pack(pady=10, padx=10)
         
-        self.load_config() # Загрузка настроек при инициализации
+        self.load_config()
 
     def load_config(self):
         """Загружает настройки из файла config.ini в UI, используя центральный менеджер."""
