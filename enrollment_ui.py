@@ -138,11 +138,13 @@ class FaceGuardCenter(ctk.CTk):
         
         if not faces:
             self.prompt_label.configure(text="Лицо не найдено! Попробуйте снова."); return
+
+        # Если найдено несколько лиц, выбираем самое большое по площади bbox.
+        # Этот код будет работать и для одного лица.
         if len(faces) > 1:
-            self.prompt_label.configure(text="Найдено несколько лиц! В кадре должен быть один."); return
-            
-        # Берем первое (и единственное) обнаруженное лицо
-        detected_face = faces[0]
+            logging.info(f"Найдено {len(faces)} лиц. Выбирается самое большое.")
+        
+        detected_face = max(faces, key=lambda face: (face.bbox[2] - face.bbox[0]) * (face.bbox[3] - face.bbox[1]))
         bbox = detected_face.bbox.astype(int)
         # Вычисляем ROI лица, убеждаясь, что координаты не выходят за границы кадра
         x1, y1, x2, y2 = max(0, bbox[0]), max(0, bbox[1]), min(frame.shape[1], bbox[2]), min(frame.shape[0], bbox[3])
