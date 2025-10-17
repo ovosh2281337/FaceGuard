@@ -56,6 +56,7 @@ class FaceGuardCenter(ctk.CTk):
         # --- Инициализация переменных состояния ---
         self.embeddings = [] # Список для хранения эмбеддингов лица во время регистрации
         self.snapshot_count = 0 # Счетчик сделанных снимков
+        self._loading_config = False # Флаг для предотвращения сохранения во время загрузки
 
         self.config = get_config() # Используем централизованный менеджер для получения конфига
 
@@ -291,6 +292,7 @@ class FaceGuardCenter(ctk.CTk):
 
     def load_config(self):
         """Загружает настройки из файла config.ini в UI, используя центральный менеджер."""
+        self._loading_config = True # Устанавливаем флаг перед загрузкой
         self.config = get_config() # Получаем актуальный конфиг
         
         # --- FaceRecognition ---
@@ -329,9 +331,12 @@ class FaceGuardCenter(ctk.CTk):
         chat_id = self.config.get('Telegram', 'chat_id', fallback='')
         self.chat_id_entry.delete(0, 'end') # Очищаем поле перед вставкой
         self.chat_id_entry.insert(0, chat_id)
+        self._loading_config = False # Сбрасываем флаг после загрузки
 
     def save_config(self):
         """Сохраняет текущие настройки из UI в файл config.ini."""
+        if self._loading_config: # Если мы в процессе загрузки, ничего не сохраняем
+            return
         try:
             # --- FaceRecognition ---
             self.config.set('FaceRecognition', 'threshold', f"{self.threshold_slider.get():.2f}")
