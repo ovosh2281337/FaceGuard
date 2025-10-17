@@ -15,10 +15,10 @@ def create_default_config():
     # Секция 2: Настройки качества снимков и лиц
     config.add_section('QualityCheck')
     config.set('QualityCheck', 'target_brightness', '120')    # Целевая яркость (0-255)
-    config.set('QualityCheck', 'brightness_tolerance', '30') # Допуск по яркости (+/-)
-    config.set('QualityCheck', 'min_det_score', '0.9')       # Минимальная уверенность детектора
+    config.set('QualityCheck', 'brightness_tolerance', '50') # Допуск по яркости (+/-)
+    config.set('QualityCheck', 'min_det_score', '0.7')       # Минимальная уверенность детектора
     config.set('QualityCheck', 'min_face_size', '60')        # Минимальный размер лица в пикселях
-    config.set('QualityCheck', 'blur_threshold', '100.0')    # Порог размытости (чем выше, тем более размытые фото отсеиваются)
+    config.set('QualityCheck', 'blur_threshold', '70.0')    # Порог размытости (чем выше, тем более размытые фото отсеиваются)
 
     # Секция 3: Настройки уведомлений в Telegram
     config.add_section('Telegram')
