@@ -30,23 +30,32 @@ def create_default_config():
     config.set('IntruderCheck', 'retries', '3') # Количество повторных проверок
     config.set('IntruderCheck', 'retry_delay_seconds', '2') # Задержка между проверками в секундах
 
+    # Секция 5: Настройки камеры
+    config.add_section('Camera')
+    config.set('Camera', 'device_id', '0') # Индекс камеры (0 - по умолчанию)
+
     return config
 
 def get_config():
     """
     Загружает конфигурацию из config.ini.
-    Если файл не найден, создает его с настройками по умолчанию.
+    Гарантирует, что все секции по умолчанию существуют.
     """
-    config = ConfigParser()
+    # Сначала создаем объект с настройками по умолчанию
+    config = create_default_config()
+
     if not os.path.exists(CONFIG_FILE):
         logging.warning(f"Файл '{CONFIG_FILE}' не найден. Создаю новый с настройками по умолчанию.")
-        default_config = create_default_config()
-        with open(CONFIG_FILE, 'w') as f:
-            default_config.write(f)
-        # После создания читаем его, чтобы вернуть объект ConfigParser
-        config.read(CONFIG_FILE)
+        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+            config.write(f)
     else:
-        config.read(CONFIG_FILE)
+        # Читаем существующий файл поверх настроек по умолчанию.
+        # Это добавит/перезапишет существующие значения, но не удалит секции, которых нет в файле.
+        try:
+            config.read(CONFIG_FILE, encoding='utf-8')
+        except Exception as e:
+            logging.error(f"Ошибка чтения файла конфигурации '{CONFIG_FILE}': {e}. Используются настройки по умолчанию.")
+
     return config
 
 if __name__ == '__main__':
