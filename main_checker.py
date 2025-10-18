@@ -13,7 +13,7 @@ from telegram_notifier import send_alert
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     handlers=[
-                        logging.FileHandler("guard.log", mode='a'), # Запись логов в файл
+                        logging.FileHandler("guard.log", mode='a', encoding='utf-8'), # Запись логов в файл
                         logging.StreamHandler() # Вывод логов в консоль
                     ])
 
@@ -313,9 +313,14 @@ if __name__ == "__main__":
     time.sleep(wait_time_seconds)
     
     # --- Выполнение проверки (одной итерации). Для постоянной работы, обернуть в while True ---
-    cap = cv2.VideoCapture(0)
+    camera_id = config.getint('Camera', 'device_id', fallback=0)
+    cap = cv2.VideoCapture(camera_id)
     if not cap.isOpened():
-        logging.error("Критическая ошибка: не удалось открыть веб-камеру.")
+        logging.error(f"Критическая ошибка: не удалось открыть веб-камеру с ID {camera_id}.")
+        logging.info("Попытка использовать камеру по умолчанию (ID 0)...")
+        cap = cv2.VideoCapture(0)
+        if not cap.isOpened():
+            logging.error("Критическая ошибка: не удалось открыть и камеру по умолчанию.")
     else:
         perform_check(face_analyzer, all_owner_embeddings, config, cap)
         cap.release() # Освобождаем камеру здесь, в самом конце
