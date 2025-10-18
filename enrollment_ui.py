@@ -503,6 +503,9 @@ class FaceGuardCenter(ctk.CTk):
         if self._loading_config:
             return
         try:
+            # --- Добавлена проверка на наличие секции ---
+            if not self.config.has_section('Camera'):
+                self.config.add_section('Camera')
             self.config.set('Camera', 'device_id', str(self.selected_camera_id))
             if hasattr(self, 'threshold_slider'):
                 self.config.set('FaceRecognition', 'threshold', f"{self.threshold_slider.get():.2f}")
