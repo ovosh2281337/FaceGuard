@@ -4,4 +4,5 @@ numpy
 opencv-python
 python-telegram-bot
 customtkinter
+pygrabber
 Pillow
